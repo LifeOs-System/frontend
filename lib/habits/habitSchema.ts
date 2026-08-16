@@ -84,12 +84,11 @@ export const CreateHabitRecordSchema = z.object({
     value: z.number().positive("El valor debe ser positivo").nullable().optional(),
     isCompleted: z.boolean().nullable().optional(),
 })
-    .strict() // rechaza campos extra
+    .strict()
     .refine(
         (data) => {
             const hasValue = data.value != null;
             const hasIsCompleted = data.isCompleted != null;
-            // Exactamente uno de los dos debe estar presente
             return hasValue !== hasIsCompleted;
         },
         {
@@ -99,3 +98,80 @@ export const CreateHabitRecordSchema = z.object({
     );
 
 export type CreateHabitRecordDto = z.infer<typeof CreateHabitRecordSchema>;
+
+// ─── Last Week Schema (GET /api/habit/last-week) ──────────────────────────────
+
+// "Magnesio · 7 de 7 días"
+export const HabitSummaryHighlightSchema = z.object({
+    habitId: z.string(),
+    habitName: z.string(),
+    completedDays: z.number().min(0),
+    totalDays: z.number().min(0),
+});
+export type HabitSummaryHighlight = z.infer<typeof HabitSummaryHighlightSchema>;
+
+// "Miércoles · 50% cumplido"
+export const WeakestDaySummarySchema = z.object({
+    date: z.string(),
+    dayName: z.string(),
+    completionPercentage: z.number().min(0).max(100),
+});
+export type WeakestDaySummary = z.infer<typeof WeakestDaySummarySchema>;
+
+// "+8% · 68% → 76%"
+export const WeekComparisonSummarySchema = z.object({
+    percentageDifference: z.number(),
+    previousWeekPercentage: z.number().min(0).max(100),
+    currentWeekPercentage: z.number().min(0).max(100),
+});
+export type WeekComparisonSummary = z.infer<typeof WeekComparisonSummarySchema>;
+
+// Cabecera de columna: "S 8"
+export const WeekDayHeaderSchema = z.object({
+    date: z.string(),
+    dayLetter: z.string().length(1),
+    dayNumber: z.number().int().min(1).max(31),
+});
+export type WeekDayHeader = z.infer<typeof WeekDayHeaderSchema>;
+
+// Celda: un día de un hábito
+export const HabitDaySummarySchema = z.object({
+    date: z.string(),
+    hasRecord: z.boolean(),
+    isCompleted: z.boolean().nullable(),
+    value: z.number().nullable(),
+    metDailyTarget: z.boolean(),
+});
+export type HabitDaySummary = z.infer<typeof HabitDaySummarySchema>;
+
+// Fila: resumen semanal de un hábito
+export const HabitWeekSummarySchema = z.object({
+    habitId: z.string(),
+    name: z.string(),
+    type: HabitTypeSchema,
+    unit: z.string().nullable(),
+    completedDays: z.number().min(0),
+    totalDays: z.number().min(0),
+    weekTotalValue: z.number().nullable(),
+    weekTotalTarget: z.number().nullable(),
+    dailyTarget: z.number().nullable(),
+    weekCompletionPercentage: z.number().min(0).max(100),
+    days: z.array(HabitDaySummarySchema),
+});
+export type HabitWeekSummary = z.infer<typeof HabitWeekSummarySchema>;
+
+// Respuesta completa del endpoint
+export const LastWeekResponseSchema = z.object({
+    totalHabits: z.number().min(0),
+    overallCompletionPercentage: z.number().min(0).max(100),
+    startDate: z.string(),
+    endDate: z.string(),
+    starHabit: HabitSummaryHighlightSchema.nullable(),
+    atRiskHabit: HabitSummaryHighlightSchema.nullable(),
+    weakestDay: WeakestDaySummarySchema.nullable(),
+    weekComparison: WeekComparisonSummarySchema,
+    days: z.array(WeekDayHeaderSchema).length(7),
+    habits: z.array(HabitWeekSummarySchema),
+});
+
+export type LastWeekResponse = z.infer<typeof LastWeekResponseSchema>;

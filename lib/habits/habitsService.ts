@@ -7,7 +7,7 @@ import {
     type CreateHabitDto,
     type CreateHabitRecordDto,
     type Habit,
-    type HabitToday,
+    type HabitToday, LastWeekResponse, LastWeekResponseSchema,
 } from "@/lib/habits/habitSchema";
 import z, { ZodError } from "zod";
 
@@ -32,6 +32,18 @@ export const habitService = {
             console.error("[habitService.getAll] respuesta inválida:", parsed.error);
             throw new Error("Respuesta inválida del servidor");
         }
+        return parsed.data;
+    },
+
+    async getLastWeek(): Promise<LastWeekResponse> {
+        const response = await api.get("/habits/last-week");
+        const parsed = LastWeekResponseSchema.safeParse(response.data);
+
+        if (!parsed.success) {
+            console.error("[habitService.getLastWeek] respuesta inválida:", parsed.error);
+            throw new Error("Respuesta inválida del servidor");
+        }
+
         return parsed.data;
     },
 
