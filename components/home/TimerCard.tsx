@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Play, Pause, RotateCcw, Volume2, Minus, Plus } from "lucide-react";
 import { useTimerStore } from "@/stores/useTimerStore";
 import { useTimerTick } from "@/hooks/useTimerTick";
@@ -54,6 +53,7 @@ export function TimerCard() {
         minutes,
         seconds,
         isRunning: storeRunning,
+        hasStarted,  // ⭐ Ahora viene del store
         hasFinished,
         setTime,
         start,
@@ -66,7 +66,6 @@ export function TimerCard() {
     const { secondsLeft } = useTimerTick();
 
     const totalConfigured = hours * 3600 + minutes * 60 + seconds;
-    const hasStarted = storeRunning || secondsLeft > 0 || hasFinished;
 
     // Display
     const dH = Math.floor(secondsLeft / 3600);
@@ -91,6 +90,7 @@ export function TimerCard() {
         setter(cur.h, cur.m, cur.s);
     };
 
+    // ⭐ Toggle simplificado
     const handleToggle = () => {
         if (hasFinished) {
             clearFinished();
@@ -249,7 +249,7 @@ export function TimerCard() {
             <div className="flex items-center gap-3">
                 <button
                     onClick={handleReset}
-                    disabled={!hasStarted && totalConfigured > 0}
+                    disabled={!hasStarted}
                     className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] text-white/60 transition-all hover:bg-white/[0.06] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Reiniciar"
                 >

@@ -2,17 +2,18 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface TimerState {
-    // Configuración (lo que el usuario selecciona)
+    // Configuración
     hours: number;
     minutes: number;
     seconds: number;
 
-    // Estado en ejecución
-    endTime: number | null; // timestamp (ms) cuando debe terminar
+    // Estado de ejecución
+    endTime: number | null;      // timestamp de fin (solo mientras corre)
+    remainingMs: number | null;  // tiempo restante congelado (solo en pausa)
     isRunning: boolean;
+    hasStarted: boolean;
     hasFinished: boolean;
 
-    // Acciones
     setTime: (h: number, m: number, s: number) => void;
     start: () => void;
     pause: () => void;
@@ -29,76 +30,94 @@ export const useTimerStore = create<TimerState>()(
             minutes: 25,
             seconds: 0,
             endTime: null,
+            remainingMs: null,
             isRunning: false,
+            hasStarted: false,
             hasFinished: false,
 
             setTime: (h, m, s) =>
-                set({ hours: h, minutes: m, seconds: s, hasFinished: false }),
+                set({
+                    hours: h,
+                    minutes: m,
+                    seconds: s,
+                    endTime: null,
+                    remainingMs: null,
+                    hasStarted: false,
+                    hasFinished: false,
+                }),
 
             start: () => {
-                const { hours, minutes, seconds, isRunning, endTime } = get();
+                const { isRunning, remainingMs, hours, minutes, seconds } = get();
                 if (isRunning) return;
 
-                const totalMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
-                if (totalMs === 0) return;
-
-                // Si hay un endTime previo (era pausado), calcular remaining
-                let newEnd: number;
-                if (endTime && endTime > Date.now()) {
-                    newEnd = endTime;
-                } else {
-                    newEnd = Date.now() + totalMs;
-                }
+                // ⭐ Si venía de una pausa, uso el restante congelado;
+                // si no, el tiempo configurado
+                const baseMs =
+                    remainingMs ?? (hours * 3600 + minutes * 60 + seconds) * 1000;
+                if (baseMs <= 0) return;
 
                 set({
                     isRunning: true,
-                    endTime: newEnd,
+                    hasStarted: true,
                     hasFinished: false,
+                    endTime: Date.now() + baseMs, // ⭐ endTime nuevo desde AHORA
+                    remainingMs: null,
                 });
             },
 
             pause: () => {
-                set({ isRunning: false });
-                // No tocamos endTime: al reanudar recalculamos desde ahí
+                const { isRunning, endTime } = get();
+                if (!isRunning || !endTime) return;
+
+                // ⭐ Congelo el restante exacto al momento de pausar
+                const rem = Math.max(0, endTime - Date.now());
+
+                if (rem <= 0) {
+                    set({ isRunning: false, endTime: null, remainingMs: null, hasFinished: true });
+                    return;
+                }
+
+                set({ isRunning: false, endTime: null, remainingMs: rem });
             },
 
-            reset: () => {
+            reset: () =>
                 set({
                     isRunning: false,
                     endTime: null,
+                    remainingMs: null,
+                    hasStarted: false,
                     hasFinished: false,
-                });
-            },
+                }),
 
-            markFinished: () => {
-                set({ isRunning: false, hasFinished: true, endTime: null });
-            },
+            markFinished: () =>
+                set({ isRunning: false, endTime: null, remainingMs: null, hasFinished: true }),
 
-            clearFinished: () => {
-                set({ hasFinished: false });
-            },
+            clearFinished: () =>
+                set({ hasFinished: false, hasStarted: false, endTime: null, remainingMs: null }),
 
-            applyPreset: (secs) => {
+            applyPreset: (secs) =>
                 set({
                     hours: Math.floor(secs / 3600),
                     minutes: Math.floor((secs % 3600) / 60),
                     seconds: secs % 60,
                     isRunning: false,
                     endTime: null,
+                    remainingMs: null,
+                    hasStarted: false,
                     hasFinished: false,
-                });
-            },
+                }),
         }),
         {
             name: "know-timer",
-            // Persistir todo: config + estado de ejecución
-            partialize: (state) => ({
-                hours: state.hours,
-                minutes: state.minutes,
-                seconds: state.seconds,
-                endTime: state.endTime,
-                isRunning: state.isRunning,
-                hasFinished: state.hasFinished,
+            partialize: (s) => ({
+                hours: s.hours,
+                minutes: s.minutes,
+                seconds: s.seconds,
+                endTime: s.endTime,
+                remainingMs: s.remainingMs,
+                isRunning: s.isRunning,
+                hasStarted: s.hasStarted,
+                hasFinished: s.hasFinished,
             }),
         }
     )
