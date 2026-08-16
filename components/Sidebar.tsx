@@ -8,6 +8,7 @@ import {
     CheckCircle2,
     NotebookText,
     Calendar,
+    Library,
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/utils/utils";
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
     { href: "/today",  label: "Hoy",              icon: Calendar        },
     { href: "/habits", label: "Hábitos",          icon: CheckCircle2    },
     { href: "/week", label: "Semana",             icon: NotebookText    },
+    { href: "/library", label: "Libreria",        icon: Library    },
 ];
 
 
