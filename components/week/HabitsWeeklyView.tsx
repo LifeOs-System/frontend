@@ -1,10 +1,12 @@
 "use client";
 
-import { Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Loader2, AlertCircle, X } from "lucide-react";
 import { useLastWeek } from "@/hooks/useLastWeek";
+import { useAiEvaluation } from "@/hooks/useAiEvaluation";
 import { HabitRow } from "./HabitRow";
 import { WeekSummaryCard } from "./WeekSummaryCard";
-import {formatWeekRange, getWeekNumber} from "@/utils/formatWeekRange";
+import { formatWeekRange, getWeekNumber } from "@/utils/formatWeekRange";
 
 const DAY_LABELS: Record<string, string> = {
     Sunday: "D",
@@ -18,9 +20,13 @@ const DAY_LABELS: Record<string, string> = {
 
 export function HabitsWeeklyView() {
     const { data, isLoading, isError, error, refetch } = useLastWeek();
+    const aiEvaluation = useAiEvaluation();
+    const [showEvaluation, setShowEvaluation] = useState(false);
 
     const handleAiEvaluation = () => {
-        console.log("[IA] Evaluación semanal — funcionalidad futura");
+        if (!data) return;
+        setShowEvaluation(true);
+        aiEvaluation.mutate(data);
     };
 
     // ── Estados ──
@@ -71,13 +77,18 @@ export function HabitsWeeklyView() {
                     <button
                         type="button"
                         onClick={handleAiEvaluation}
-                        className="mr-2 flex h-9 items-center gap-2 rounded-full border border-neutral-500 bg-neutral-900 px-4 text-sm font-semibold text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] transition-all hover:bg-neutral-800 hover:shadow-[0_0_18px_rgba(255,255,255,0.3)]"
+                        disabled={aiEvaluation.isPending}
+                        className="mr-2 flex h-9 items-center gap-2 rounded-full border border-neutral-500 bg-neutral-900 px-4 text-sm font-semibold text-white shadow-[0_0_12px_rgba(255,255,255,0.15)] transition-all hover:bg-neutral-800 hover:shadow-[0_0_18px_rgba(255,255,255,0.3)] disabled:opacity-60"
                     >
-                        <Sparkles
-                            size={15}
-                            className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]"
-                        />
-                        Evalúame
+                        {aiEvaluation.isPending ? (
+                            <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                            <Sparkles
+                                size={15}
+                                className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]"
+                            />
+                        )}
+                        {aiEvaluation.isPending ? "Evaluando..." : "Evalúame"}
                     </button>
                 </div>
             </div>
@@ -153,6 +164,59 @@ export function HabitsWeeklyView() {
                     ))}
                 </div>
             </div>
+
+            {/* ── Modal de evaluación IA ── */}
+            {showEvaluation && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+                    <div className="w-full max-w-lg rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-white" />
+                                <h2 className="text-sm font-bold text-white">
+                                    Evaluación de tu semana
+                                </h2>
+                            </div>
+                            <button
+                                onClick={() => setShowEvaluation(false)}
+                                className="rounded-full p-1 text-neutral-500 hover:bg-neutral-800 hover:text-white"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                            {aiEvaluation.isPending && (
+                                <div className="flex items-center gap-2 py-8 text-sm text-neutral-400">
+                                    <Loader2 size={16} className="animate-spin" />
+                                    Analizando tus hábitos...
+                                </div>
+                            )}
+
+                            {aiEvaluation.isError && (
+                                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                                    <AlertCircle size={18} className="text-red-400" />
+                                    <p className="text-sm text-neutral-400">
+                                        {aiEvaluation.error?.message ??
+                                            "No se pudo generar la evaluación."}
+                                    </p>
+                                    <button
+                                        onClick={() => data && aiEvaluation.mutate(data)}
+                                        className="rounded-full border border-neutral-700 px-4 py-1.5 text-xs text-white hover:bg-neutral-800"
+                                    >
+                                        Reintentar
+                                    </button>
+                                </div>
+                            )}
+
+                            {aiEvaluation.isSuccess && (
+                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
+                                    {aiEvaluation.data}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

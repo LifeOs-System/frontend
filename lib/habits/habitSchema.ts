@@ -155,7 +155,7 @@ export const HabitWeekSummarySchema = z.object({
     weekTotalValue: z.number().nullable(),
     weekTotalTarget: z.number().nullable(),
     dailyTarget: z.number().nullable(),
-    weekCompletionPercentage: z.number().min(0).max(100),
+    weekCompletionPercentage: z.number().min(0),
     days: z.array(HabitDaySummarySchema),
 });
 export type HabitWeekSummary = z.infer<typeof HabitWeekSummarySchema>;
@@ -163,7 +163,7 @@ export type HabitWeekSummary = z.infer<typeof HabitWeekSummarySchema>;
 // Respuesta completa del endpoint
 export const LastWeekResponseSchema = z.object({
     totalHabits: z.number().min(0),
-    overallCompletionPercentage: z.number().min(0).max(100),
+    overallCompletionPercentage: z.number().min(0),
     startDate: z.string(),
     endDate: z.string(),
     starHabit: HabitSummaryHighlightSchema.nullable(),
