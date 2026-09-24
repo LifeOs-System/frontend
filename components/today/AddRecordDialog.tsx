@@ -6,8 +6,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Target, X } from "lucide-react";
 import { cn } from "@/utils/utils";
 import { AREA_LABELS } from "@/utils/labels";
-import type { TodayHabit } from "@/lib/habits/habitSchema";
 import { Button } from "../Button";
+import {TodayHabit} from "@/lib/habits/types";
 
 
 interface AddRecordDialogProps {
@@ -34,7 +34,7 @@ export default function AddRecordDialog({
     if (!habit) return null;
 
     // ─── Cálculos ─────────────────────────────────────────────────────────────
-    const current = habit.todayValue ?? 0;          // lo que ya tenía hoy
+    const current = habit.value ?? 0;          // lo que ya tenía hoy
     const add = value === "" ? 0 : Number(value);   // lo que va a agregar
     const isValidAdd = value !== "" && !isNaN(add) && add > 0;
     const total = current + add;                    // lo que se envía al backend

@@ -1,15 +1,8 @@
 import { api } from "@/lib/axios";
-import {
-    CreateHabitSchema,
-    CreateHabitRecordSchema,
-    HabitSchema,
-    HabitTodaySchema,
-    type CreateHabitDto,
-    type CreateHabitRecordDto,
-    type Habit,
-    type HabitToday, LastWeekResponse, LastWeekResponseSchema,
-} from "@/lib/habits/habitSchema";
 import z, { ZodError } from "zod";
+import {CreateHabitDto, CreateHabitSchema} from "@/lib/habits/habitSchema";
+import {Habit, TodayHabit} from "@/lib/habits/types";
+import {CreateHabitRecordDto, CreateHabitRecordSchema} from "@/lib/habits/habitRecordSchema";
 
 export class ValidationError extends Error {
     fieldErrors: Record<string, string>;
@@ -26,37 +19,23 @@ export class ValidationError extends Error {
 export const habitService = {
     /** GET /habits — lista completa */
     async getAll(): Promise<Habit[]> {
-        const response = await api.get("/habits");
-        const parsed = z.array(HabitSchema).safeParse(response.data);
-        if (!parsed.success) {
-            console.error("[habitService.getAll] respuesta inválida:", parsed.error);
-            throw new Error("Respuesta inválida del servidor");
-        }
-        return parsed.data;
+        // Axios infiere el tipo de retorno gracias a <Habit[]>
+        const response = await api.get<Habit[]>("/habits");
+        return response.data;
     },
 
-    async getLastWeek(): Promise<LastWeekResponse> {
-        const response = await api.get("/habits/last-week");
-        const parsed = LastWeekResponseSchema.safeParse(response.data);
-
-        if (!parsed.success) {
-            console.error("[habitService.getLastWeek] respuesta inválida:", parsed.error);
-            throw new Error("Respuesta inválida del servidor");
-        }
-
-        return parsed.data;
+    async getAllToday(): Promise<TodayHabit[]> {
+        const response = await api.get<TodayHabit[]>("/habits/today");
+        return response.data;
     },
 
-    /** GET /habits/today — hábitos del día */
-    async getAllToday(): Promise<HabitToday[]> {
-        const response = await api.get("/habits/today");
-        const parsed = z.array(HabitTodaySchema).safeParse(response.data);
-        if (!parsed.success) {
-            console.error("[habitService.getAllToday] respuesta inválida:", parsed.error);
-            throw new Error("Respuesta inválida del servidor");
-        }
-        return parsed.data;
+    async createRecord(dto: CreateHabitRecordDto): Promise<void> {
+        const parsed = CreateHabitRecordSchema.safeParse(dto);
+        if (!parsed.success) throw new ValidationError(parsed.error);
+
+        await api.post("/habit-record", parsed.data);
     },
+
 
     /** POST /habits — crear hábito */
     async create(dto: CreateHabitDto): Promise<void> {
@@ -72,11 +51,5 @@ export const habitService = {
         await api.post("/habits", payload);
     },
 
-    /** POST /api/habit-record — registrar hábito de hoy */
-    async createRecord(dto: CreateHabitRecordDto): Promise<void> {
-        const parsed = CreateHabitRecordSchema.safeParse(dto);
-        if (!parsed.success) throw new ValidationError(parsed.error);
 
-        await api.post("/habit-record", parsed.data);
-    },
 };

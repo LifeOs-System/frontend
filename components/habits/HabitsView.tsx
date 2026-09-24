@@ -1,39 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import HabitCard from "./HabitCard";
-import HabitDetailDialog from "./HabitDetailDialog";
-import { notify } from "@/components/Toast";
-import type { Habit } from "@/lib/habits/habitSchema";
 import CreateHabitDialog from "@/components/CreateHabitDialog";
-import {useHabits} from "@/lib/habits/useHabits";
-import {HabitStatus} from "@/types/habits";
+import { useHabits } from "@/lib/habits/useHabits";
 
 export default function HabitsView() {
     const { data: habits, isLoading, isError, error } = useHabits();
-    const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
-    const [detailOpen, setDetailOpen] = useState(false);
-
-    const openDetail = (habit: Habit) => {
-        setSelectedHabit(habit);
-        setDetailOpen(true);
-    };
-
-    // ── TODO: conectar al backend cuando corresponda ──
-    const handleEdit = (_habit: Habit) => {
-        notify.info({
-            title: "Edición de hábitos",
-            description: "Esta funcionalidad llegará próximamente.",
-        });
-    };
-
-    const handleChangeStatus = (_habit: Habit, _newStatus: HabitStatus) => {
-        notify.info({
-            title: "Cambio de estado",
-            description: "Esta funcionalidad llegará próximamente.",
-        });
-    };
 
     if (isLoading) {
         return (
@@ -98,17 +71,10 @@ export default function HabitsView() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {visibleHabits.map((habit) => (
-                    <HabitCard key={habit.id} habit={habit} onSelect={openDetail} />
+                    // ✅ Se eliminó la prop 'onSelect' ya que no hay dialog que abrir
+                    <HabitCard key={habit.id} habit={habit} />
                 ))}
             </div>
-
-            <HabitDetailDialog
-                habit={selectedHabit}
-                open={detailOpen}
-                onOpenChange={setDetailOpen}
-                onEdit={handleEdit}
-                onChangeStatus={handleChangeStatus}
-            />
         </div>
     );
 }

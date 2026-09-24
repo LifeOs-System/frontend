@@ -8,6 +8,27 @@ const QUOTES = [
     { text: "No cuentes los días, haz que los días cuenten.", author: "Muhammad Ali" },
     { text: "El único modo de hacer un gran trabajo es amar lo que haces.", author: "Steve Jobs" },
     { text: "La vida es lo que pasa mientras estás ocupado haciendo otros planes.", author: "John Lennon" },
+    { text: "Hecho es mejor que perfecto.", author: "Anonimo" },
+    { text: "Todo el tiempo pasan cosas que nunca antes habian sucedido.", author: "Scott Sagan" },
+    { text: "Lo importante no es si estas en lo cierto o no " +
+            "-sino cuanto dinero ganas cuando estas en lo cierto y cuanto pierdes cuando estas equivocado.", author: "George Soros" },
+
+    // Nuevas frases:
+    { text: "Si puedes soñarlo, puedes hacerlo.", author: "Walt Disney" },
+    { text: "La única forma de hacer un gran trabajo es amar lo que haces.", author: "Steve Jobs" },
+    { text: "Cree que puedes y ya estarás a medio camino.", author: "Theodore Roosevelt" },
+    { text: "No importa lo lento que vayas, siempre y cuando no te detengas.", author: "Confucio" },
+    { text: "El futuro pertenece a quienes creen en la belleza de sus sueños.", author: "Eleanor Roosevelt" },
+    { text: "La mejor manera de predecir el futuro es crearlo.", author: "Peter Drucker" },
+    { text: "No esperes. El tiempo nunca será justo.", author: "Napoleon Hill" },
+    { text: "Lo que no te mata te hace más fuerte.", author: "Friedrich Nietzsche" },
+    { text: "La excelencia no es un acto, sino un hábito.", author: "Aristóteles" },
+    { text: "Tu tiempo es limitado, no lo desperdicies viviendo la vida de alguien más.", author: "Steve Jobs" },
+    { text: "La acción es la clave fundamental para todo éxito.", author: "Pablo Picasso" },
+    { text: "Si quieres algo que nunca tuviste, debes hacer algo que nunca has hecho.", author: "Thomas Jefferson" },
+    { text: "El único límite para nuestro logro del mañana serán nuestras dudas de hoy.", author: "Franklin D. Roosevelt" },
+    { text: "No te juzgues por tus logros, sino por el esfuerzo que hiciste.", author: "Anonimo" },
+    { text: "Cada día es una nueva oportunidad para cambiar tu vida.", author: "Anonimo" },
 ];
 
 interface QuoteCardProps {

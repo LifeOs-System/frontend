@@ -5,14 +5,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 import { Input } from "./Input";
 import { Button } from "./Button";
-import {
-    type Area,
-    type DayOfWeek,
-    type HabitType,
-} from "@/types/habits";
 import { AREA_LABELS, AREAS, DAY_LABELS, DAYS, HABIT_TYPE_LABELS, HABIT_TYPES } from "@/utils/labels";
 import { useCreateHabit } from "@/lib/habits/useHabits";
 import { type CreateHabitDto } from "@/lib/habits/habitSchema";
+import {Area, DayOfWeek, HabitType} from "@/lib/habits/types";
 
 export default function CreateHabitDialog() {
     const [name, setName] = useState("");
@@ -20,12 +16,16 @@ export default function CreateHabitDialog() {
     const [type, setType] = useState<HabitType>("Binary");
     const [goal, setGoal] = useState("");
     const [unit, setUnit] = useState("");
+
+    // Estados para la programación
+    const [frequency, setFrequency] = useState<"Weekly" | "Monthly" | null>(null);
+    const [occurrences, setOccurrences] = useState("");
+
     const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
     ]);
     const [isOpen, setIsOpen] = useState(false);
 
-    // Hook de React Query
     const createMutation = useCreateHabit();
 
     const toggleDay = (day: DayOfWeek) => {
@@ -40,35 +40,46 @@ export default function CreateHabitDialog() {
         setType("Binary");
         setGoal("");
         setUnit("");
+        setFrequency(null);
+        setOccurrences("");
         setSelectedDays(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // DTO alineado al wire del backend
+        // DTO actualizado para incluir frequency y occurrences
         const dto: CreateHabitDto = {
             name,
             area,
             type,
             target: type !== "Binary" ? Number(goal) : null,
             unit: type !== "Binary" ? unit : null,
-            days: selectedDays,
+
+            // Si hay frecuencia, enviamos array vacío de días. Si no, enviamos los días seleccionados.
+            days: frequency === null ? selectedDays : [],
+
+            // Nuevos campos
+            frequency: frequency,
+            occurrences: frequency !== null && occurrences ? Number(occurrences) : null,
         };
 
-        // Ejecutar mutación con callbacks
         createMutation.mutate(dto, {
             onSuccess: () => {
-                // Limpiar formulario y cerrar dialog
                 resetForm();
                 setIsOpen(false);
             },
         });
     };
 
+    // Helper para las clases de los botones de selección
+    const getSelectionClass = (isSelected: boolean) =>
+        isSelected
+            ? "bg-white/10 border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)_inset]"
+            : "bg-white/[0.01] border-white/[0.03] text-white/30 hover:bg-white/[0.04] hover:text-white/60";
+
     return (
         <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-            {/* ─── TRIGGER BUTTON ─── */}
             <Dialog.Trigger asChild>
                 <Button icon={<Plus strokeWidth={2} />}>
                     Agregar Hábito
@@ -78,11 +89,10 @@ export default function CreateHabitDialog() {
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-50" />
 
-                <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-6 border border-white/[0.08] bg-[#0a0a0c]/95 backdrop-blur-xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-3xl outline-none">
+                <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-6 border border-white/[0.08] bg-[#0a0a0c]/95 backdrop-blur-xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-3xl outline-none max-h-[90vh] overflow-y-auto">
 
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
 
-                    {/* Header */}
                     <div className="flex flex-col gap-1.5">
                         <Dialog.Title className="text-[20px] font-semibold text-white tracking-tight drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
                             Nuevo Hábito
@@ -106,31 +116,28 @@ export default function CreateHabitDialog() {
                             />
                         </div>
 
-                        {/* ─── ÁREA (Píldoras) ─── */}
+                        {/* ─── ÁREA ─── */}
                         <div className="flex flex-col gap-3">
                             <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Área</label>
                             <div className="flex flex-wrap gap-2">
-                                {AREAS.map((a) => {
-                                    const isSelected = area === a;
-                                    return (
-                                        <button
-                                            key={a}
-                                            type="button"
-                                            onClick={() => setArea(a)}
-                                            className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 border
-                                                ${isSelected
-                                                ? "bg-white/[0.06] border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)_inset]"
-                                                : "bg-white/[0.01] border-white/[0.05] text-white/40 hover:bg-white/[0.04] hover:text-white/70 hover:border-white/10"
-                                            }`}
-                                        >
-                                            {AREA_LABELS[a]}
-                                        </button>
-                                    );
-                                })}
+                                {AREAS.map((a) => (
+                                    <button
+                                        key={a}
+                                        type="button"
+                                        onClick={() => setArea(a)}
+                                        className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 border
+                                            ${area === a
+                                            ? "bg-white/[0.06] border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)_inset]"
+                                            : "bg-white/[0.01] border-white/[0.05] text-white/40 hover:bg-white/[0.04] hover:text-white/70 hover:border-white/10"
+                                        }`}
+                                    >
+                                        {AREA_LABELS[a]}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
-                        {/* ─── TIPO (Tarjetas) ─── */}
+                        {/* ─── TIPO ─── */}
                         <div className="flex flex-col gap-3">
                             <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Tipo</label>
                             <div className="grid grid-cols-3 gap-3">
@@ -186,28 +193,68 @@ export default function CreateHabitDialog() {
                             </div>
                         )}
 
-                        {/* ─── Días de la semana ─── */}
+                        {/* ─── PROGRAMACIÓN (Días vs Frecuencia) ─── */}
                         <div className="flex flex-col gap-3">
-                            <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Frecuencia Semanal</label>
-                            <div className="flex justify-between gap-2">
-                                {DAYS.map((day) => {
-                                    const isSelected = selectedDays.includes(day);
-                                    return (
-                                        <button
-                                            key={day}
-                                            type="button"
-                                            onClick={() => toggleDay(day)}
-                                            className={`flex-1 flex items-center justify-center h-10 rounded-lg text-[13px] font-medium transition-all duration-200 border
-                                                ${isSelected
-                                                ? "bg-white/10 border-white/20 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)_inset]"
-                                                : "bg-white/[0.01] border-white/[0.03] text-white/30 hover:bg-white/[0.04] hover:text-white/60"
-                                            }`}
-                                        >
-                                            {DAY_LABELS[day]}
-                                        </button>
-                                    );
-                                })}
+                            <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Programación</label>
+
+                            {/* Selector de modo */}
+                            <div className="flex gap-2 p-1 bg-white/[0.02] rounded-xl border border-white/[0.05]">
+                                <button
+                                    type="button"
+                                    onClick={() => setFrequency(null)}
+                                    className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${getSelectionClass(frequency === null)}`}
+                                >
+                                    Días específicos
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFrequency("Weekly")}
+                                    className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${getSelectionClass(frequency === "Weekly")}`}
+                                >
+                                    Semanal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFrequency("Monthly")}
+                                    className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${getSelectionClass(frequency === "Monthly")}`}
+                                >
+                                    Mensual
+                                </button>
                             </div>
+
+                            {/* Renderizado condicional: Días o Ocurrencias */}
+                            {frequency === null ? (
+                                <div className="flex justify-between gap-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    {DAYS.map((day) => {
+                                        const isSelected = selectedDays.includes(day);
+                                        return (
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => toggleDay(day)}
+                                                className={`flex-1 flex items-center justify-center h-10 rounded-lg text-[13px] font-medium transition-all duration-200 border
+                                                    ${getSelectionClass(isSelected)}`}
+                                            >
+                                                {DAY_LABELS[day]}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
+                                        Cantidad de veces {frequency === "Weekly" ? "por semana" : "por mes"}
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        value={occurrences}
+                                        onChange={(e) => setOccurrences(e.target.value)}
+                                        placeholder="Ej: 3"
+                                        min="1"
+                                        required
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* ─── Footer Actions ─── */}

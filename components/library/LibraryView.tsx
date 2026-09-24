@@ -20,7 +20,7 @@ const INITIAL_BOOKS: ShelfBook[] = [
     { id: "b3",  title: "Hábitos Atómicos",                                completed: true,  height: 520, width: 100, tone: "t3" },
     { id: "b4",  title: "Piense y Hágase Rico",                            completed: true,  height: 480, width: 92,  tone: "t4" },
     { id: "b5",  title: "La Psicología del Dinero",                        completed: true, height: 505, width: 104, tone: "t2" },
-    { id: "b6",  title: "The Lean Startup",                                completed: false, height: 440, width: 84,  tone: "t3" },
+    { id: "b6",  title: "The Lean Startup",                                completed: true, height: 440, width: 84,  tone: "t3" },
     { id: "b7",  title: "The Obstacle Is the Way",                         completed: false, height: 470, width: 92,  tone: "t1" },
     { id: "b8",  title: "Thinking, Fast and Slow",                         completed: false, height: 495, width: 100, tone: "t4" },
     { id: "b9",  title: "Ganar amigos e influir sobre las personas",       completed: false, height: 620, width: 110, tone: "t2" },

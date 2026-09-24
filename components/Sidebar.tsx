@@ -31,7 +31,6 @@ const NAV_ITEMS: NavItem[] = [
     { href: "/home",   label: "Panel de control", icon: LayoutDashboard },
     { href: "/today",  label: "Hoy",              icon: Calendar        },
     { href: "/habits", label: "Hábitos",          icon: CheckCircle2    },
-    { href: "/week", label: "Semana",             icon: NotebookText    },
     { href: "/library", label: "Libreria",        icon: Library    },
 ];
 

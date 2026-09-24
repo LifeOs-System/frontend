@@ -5,19 +5,25 @@ import { Calendar, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/utils/utils";
 import TodayHabitCard from "./TodayHabitCard";
 import AddRecordDialog from "./AddRecordDialog";
-import type { HabitToday, TodayHabit } from "@/lib/habits/habitSchema";
 import {useCreateHabitRecord, useTodayHabits} from "@/lib/habits/useHabits";
+import {TodayHabit} from "@/lib/habits/types";
 
-function adaptHabitToday(habit: HabitToday): TodayHabit {
+function adaptHabitToday(habit: any): TodayHabit {
     return {
         id: habit.id,
         name: habit.name,
         type: habit.type,
-        target: habit.target,
-        unit: habit.unit,
+        target: habit.target ?? null,
+
+        value: habit.value ?? null,
+        isCompleted: habit.isCompleted ?? false,
+
+        unit: habit.unit ?? null,
         area: habit.area,
-        completedToday: habit.isCompleted,
-        todayValue: habit.value ?? null,
+
+        frequency: habit.frequency ?? null,
+        occurrences: habit.occurrences ?? null,
+        completedOccurrences: habit.completedOccurrences ?? null,
     };
 }
 
@@ -33,7 +39,7 @@ export default function TodayView() {
     const handleToggle = (habit: TodayHabit) => {
         createRecord.mutate({
             habitId: habit.id,
-            isCompleted: !habit.completedToday,
+            isCompleted: !habit.isCompleted,
         });
     };
 
@@ -87,7 +93,7 @@ export default function TodayView() {
         );
     }
 
-    const completedCount = habits.filter((h) => h.completedToday).length;
+    const completedCount = habits.filter((h) => h.isCompleted).length;
     const totalCount = habits.length;
     const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const allCompleted = totalCount > 0 && completedCount === totalCount;
