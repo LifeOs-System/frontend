@@ -48,3 +48,4 @@ export function formatShortDate(iso: string): string {
     const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
     return `${day} ${MONTHS_ES[month - 1]} ${year}`;
 }
+
