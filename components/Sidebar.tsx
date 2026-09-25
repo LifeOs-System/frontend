@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     CheckCircle2,
-    NotebookText,
     Calendar,
     Library,
+    Apple, // 👈 Nuevo icono para Nutrición
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/utils/utils";
@@ -18,6 +18,7 @@ interface NavItem {
     href: string;
     label: string;
     icon: LucideIcon;
+    badge?: string; // 👈 Opcional: para mostrar "IA" u otro distintivo
 }
 
 interface FooterItem {
@@ -28,13 +29,12 @@ interface FooterItem {
 
 // ─── Datos de navegación ──────────────────────────────────────────────────────
 const NAV_ITEMS: NavItem[] = [
-    { href: "/home",   label: "Panel de control", icon: LayoutDashboard },
-    { href: "/today",  label: "Hoy",              icon: Calendar        },
-    { href: "/habits", label: "Hábitos",          icon: CheckCircle2    },
-    { href: "/library", label: "Libreria",        icon: Library    },
+    { href: "/home",      label: "Panel de control", icon: LayoutDashboard },
+    { href: "/today",     label: "Hoy",              icon: Calendar        },
+    { href: "/habits",    label: "Hábitos",          icon: CheckCircle2    },
+    { href: "/nutrition", label: "Nutrición",        icon: Apple,      badge: "IA" }, // 👈 NUEVA SECCIÓN
+    { href: "/library",   label: "Librería",         icon: Library         },
 ];
-
-
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function Sidebar(): React.JSX.Element {
@@ -103,7 +103,21 @@ export default function Sidebar(): React.JSX.Element {
                                 strokeWidth={1.8}
                             />
 
-                            <span className="truncate">{item.label}</span>
+                            <span className="flex-1 truncate">{item.label}</span>
+
+                            {/* 👈 Badge opcional para destacar que es IA */}
+                            {item.badge && (
+                                <span
+                                    className={cn(
+                                        "px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase",
+                                        "bg-gradient-to-br from-white/10 to-white/[0.03]",
+                                        "border border-white/10 text-white/60",
+                                        isActive ? "bg-white/10 text-white/90" : ""
+                                    )}
+                                >
+                                    {item.badge}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

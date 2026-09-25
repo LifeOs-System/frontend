@@ -5,7 +5,11 @@ import { DashboardHeader } from "@/components/home/DashboardHeader";
 import { QuoteCard } from "@/components/home/QuoteCard";
 import { TimerCard } from "@/components/home/TimerCard";
 import { TasksCard } from "@/components/home/TasksCard";
-import { getDashboardDateInfo, type DashboardDateInfo } from "@/utils/util-date-dashboard";
+import InstallPWA from "@/components/InstallPWA";
+import {
+  getDashboardDateInfo,
+  type DashboardDateInfo,
+} from "@/utils/util-date-dashboard";
 
 export default function Dashboard(): React.JSX.Element {
   const [dateInfo, setDateInfo] = useState<DashboardDateInfo>({
@@ -39,12 +43,16 @@ export default function Dashboard(): React.JSX.Element {
               <div className="min-h-[560px]">
                 <TimerCard />
               </div>
+
               <div className="min-h-[560px]">
                 <TasksCard />
               </div>
             </div>
           </div>
         </main>
+
+        {/* ── Instalar LifeOS ── */}
+        <InstallPWA />
       </div>
   );
 }

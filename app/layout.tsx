@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Providers from "@/components/Providers";
+import FullscreenButton from "@/components/FullscreenButton";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,19 +16,21 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} h-full antialiased`}>
+      <html lang="es" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
-        <Providers>
-          {children}
-        </Providers>
-        <Toaster position="top-center" />
+      <Providers>
+        {children}
+      </Providers>
+
+      <FullscreenButton />
+
+      <Toaster position="top-center" />
       </body>
-    </html>
+      </html>
   );
 }
-

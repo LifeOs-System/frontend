@@ -9,15 +9,22 @@ import { Book } from "@/lib/books/types";
 import BookDetailDialog from "@/components/library/BookDetailDialog";
 import CreateBookDialog from "@/components/library/CreateBookDialog";
 
-
 // ─── Helper para estilos visuales de la estantería ───────────────────────────
-const getBookVisuals = (index: number) => {
-    const heights = [480, 500, 520, 540, 560, 460, 490];
+const getBookVisuals = (book: Book, index: number) => {
+    // 1. Cálculo dinámico de la altura basado en la longitud del título
+    const baseHeight = 260; // Altura mínima en px para títulos muy cortos
+    const pixelsPerChar = 6; // Cuántos píxeles extra se agregan por cada letra
+    const maxHeight = 460;   // Altura máxima para que no crezca infinitamente
+
+    const calculatedHeight = baseHeight + (book.title.length * pixelsPerChar);
+    const height = Math.min(calculatedHeight, maxHeight);
+
+    // 2. El ancho y el tono siguen siendo pseudo-aleatorios para realismo
     const widths = [84, 90, 96, 100, 104, 110];
     const tones = ["t1", "t2", "t3", "t4"] as const;
 
     return {
-        height: heights[index % heights.length],
+        height,
         width: widths[index % widths.length],
         tone: tones[index % tones.length]
     };
@@ -102,9 +109,12 @@ export function LibraryView() {
             <div className="w-full max-w-full px-6 md:px-10">
                 <div className="shelf-scroll overflow-x-auto overflow-y-hidden">
                     <div className="w-max pt-6 pb-4">
+                        {/* items-end es CLAVE aquí: hace que todos los libros se apoyen en la base */}
                         <div className="flex items-end gap-3 pb-1">
                             {books.map((book, index) => {
-                                const visuals = getBookVisuals(index);
+                                // 👇 Pasamos el objeto 'book' completo a la función
+                                const visuals = getBookVisuals(book, index);
+
                                 return (
                                     <button
                                         key={book.id}
@@ -112,21 +122,24 @@ export function LibraryView() {
                                         title={`${book.title} por ${book.author}`}
                                         style={{ height: visuals.height, width: visuals.width }}
                                         className={cn(
-                                            "relative flex shrink-0 flex-col items-center justify-between rounded-t-lg rounded-b-[4px] border py-6 transition-all duration-300 hover:-translate-y-5 hover:shadow-[0_20px_45px_rgba(0,0,0,0.7)] cursor-pointer",
+                                            "relative flex shrink-0 flex-col items-center justify-between rounded-t-lg rounded-b-[4px] border py-6 transition-all duration-300 hover:-translate-y-5 hover:shadow-[0_20px_45px_rgba(0,0,0,0.7)] cursor-pointer group",
                                             book.isRead ? COMPLETED_TONE : PENDING_TONES[visuals.tone]
                                         )}
                                     >
                                         <span className="h-px w-10 bg-current opacity-30" />
+
+                                        {/* Sugerencia: quitamos 'truncate' para que el texto se aproveche de la nueva altura dinámica */}
                                         <span className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-2">
-                                            <span className="[writing-mode:vertical-rl] rotate-180 truncate text-[13px] md:text-[15px] font-semibold uppercase tracking-[0.15em]">
+                                            <span className="[writing-mode:vertical-rl] rotate-180 text-[13px] md:text-[15px] font-semibold uppercase tracking-[0.15em] break-words text-center">
                                                 {book.title}
                                             </span>
                                         </span>
+
                                         <span className="flex flex-col items-center gap-2">
                                             {book.isRead ? (
                                                 <Check size={18} strokeWidth={3} className="text-black" />
                                             ) : (
-                                                <Circle size={13} className="text-white/30" />
+                                                <Circle size={13} className="text-white/30 group-hover:text-white/60 transition-colors" />
                                             )}
                                         </span>
                                         <span className="h-px w-10 bg-current opacity-30" />
