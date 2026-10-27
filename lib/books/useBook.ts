@@ -10,7 +10,6 @@ export function useBooks() {
     return useQuery<Book[]>({
         queryKey: ["books"],
         queryFn: () => bookService.getAll(),
-        // Opcional: staleTime: 1000 * 60 * 5, // Cachea por 5 minutos
     });
 }
 

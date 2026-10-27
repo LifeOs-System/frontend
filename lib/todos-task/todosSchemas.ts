@@ -15,7 +15,7 @@ export const CreateToDoTaskSchema = z.object({
     name: z
         .string("El nombre es obligatorio")
         .min(1, "El nombre no puede estar vacío")
-        .max(100, "El nombre no puede exceder los 100 caracteres")
+        .max(1000, "El nombre no puede exceder los 100 caracteres")
         .trim(),
     date: z
         .string()

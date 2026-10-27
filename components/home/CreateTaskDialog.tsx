@@ -97,8 +97,7 @@ export function CreateTaskDialog() {
                                     <label className="mb-2 block text-[11px] font-medium uppercase tracking-[0.2em] text-white/40">
                                         Nombre *
                                     </label>
-                                    <input
-                                        type="text"
+                                    <textarea
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Ej: Hablar con el equipo de UI"

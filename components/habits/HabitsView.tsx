@@ -1,12 +1,19 @@
 "use client";
 
-import { Plus, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation"; // ⭐ agregado
+import { Plus, Loader2, Sparkles } from "lucide-react";
 import HabitCard from "./HabitCard";
 import CreateHabitDialog from "@/components/CreateHabitDialog";
 import { useHabits } from "@/lib/habits/useHabits";
 
 export default function HabitsView() {
+    const router = useRouter(); // ⭐ agregado
     const { data: habits, isLoading, isError, error } = useHabits();
+
+    // ⭐ ahora navega a la página de análisis
+    const handleViewSummary = () => {
+        router.push("/habits/ia-30-days-summary");
+    };
 
     if (isLoading) {
         return (
@@ -28,7 +35,6 @@ export default function HabitsView() {
         );
     }
 
-    // Filtrar Deleted: no se muestran en la lista principal
     const visibleHabits = (habits ?? []).filter((h) => h.status !== "Deleted");
 
     if (visibleHabits.length === 0) {
@@ -48,30 +54,33 @@ export default function HabitsView() {
         );
     }
 
-    const activeHabits = visibleHabits.filter((h) => h.status === "Active");
-    const avgRate = Math.round(
-        activeHabits.length
-            ? activeHabits.reduce((acc, h) => acc + h.completionRate, 0) / activeHabits.length
-            : 0
-    );
-
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex items-end justify-between">
+            <div className="flex items-start sm:items-end justify-between gap-4 flex-wrap">
                 <div className="flex flex-col gap-1">
                     <h2 className="text-[20px] font-semibold text-white tracking-tight">
                         Mis Hábitos
                     </h2>
                     <p className="text-[13px] text-white/40">
-                        {visibleHabits.length} {visibleHabits.length === 1 ? "hábito" : "hábitos"} ·{" "}
-                        <span className="text-white/60 font-medium">{avgRate}%</span> cumplimiento promedio
+                        {visibleHabits.length} {visibleHabits.length === 1 ? "hábito" : "hábitos"}
                     </p>
                 </div>
+
+                <button
+                    type="button"
+                    onClick={handleViewSummary}
+                    className="flex h-9 items-center gap-2 rounded-full border border-white/15 bg-white/[0.03] px-4 text-[13px] font-medium text-white/90 shadow-[0_0_12px_rgba(255,255,255,0.08)] transition-all hover:bg-white/[0.08] hover:border-white/25 hover:shadow-[0_0_18px_rgba(255,255,255,0.15)]"
+                >
+                    <Sparkles
+                        size={14}
+                        className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]"
+                    />
+                    Ver resumen últimos 30 días
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {visibleHabits.map((habit) => (
-                    // ✅ Se eliminó la prop 'onSelect' ya que no hay dialog que abrir
                     <HabitCard key={habit.id} habit={habit} />
                 ))}
             </div>

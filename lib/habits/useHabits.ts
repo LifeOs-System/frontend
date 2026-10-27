@@ -3,14 +3,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     type CreateHabitDto,
-    type CreateHabitRecordDto,
 } from "@/lib/habits/habitSchema";
 import { habitService, ValidationError } from "@/lib/habits/habitsService";
 import { notify } from "@/components/Toast";
+import { CreateHabitRecordDto } from "@/lib/habits/habitRecordSchema";
+import {HabitAnalysisInput, HabitInput} from "@/app/(app)/habits/ia-30-days-summary/prompts";
+
 
 export const habitKeys = {
     all: ["habits"] as const,
     today: ["habits", "today"] as const,
+    last30Days: ["habits", "last30Days"] as const,
 };
 
 export function useHabits() {
@@ -31,6 +34,44 @@ export function useTodayHabits() {
     });
 }
 
+/**
+ * Obtiene los hábitos con sus registros de los últimos 30 días.
+ * Devuelve directamente el payload mapeado al formato que espera el prompt de IA
+ * (HabitAnalysisInput), para que la page no tenga que hacer transformaciones.
+ */
+export function useLast30DaysHabits() {
+    return useQuery({
+        queryKey: habitKeys.last30Days,
+        queryFn: async (): Promise<HabitAnalysisInput> => {
+            const response = await habitService.getLast30Days();
+            return {
+                habits: response.habits.map(
+                    (h): HabitInput => ({
+                        name: h.name,
+                        type: h.type,
+                        status: h.status,
+                        startDate: h.startDate ?? "",
+                        target: h.target,
+                        unit: h.unit,
+                        area: h.area,
+                        days: h.days,
+                        frequency: h.frequency,
+                        occurrences: h.occurrences,
+                        records: h.records.map((r) => ({
+                            date: r.date,
+                            value: r.value,
+                            target: r.target,
+                            isCompleted: r.isCompleted,
+                        })),
+                    })
+                ),
+            };
+        },
+        staleTime: 5 * 60_000, // 5 minutos: no hace falta refetchear cada minuto
+        retry: 1,
+    });
+}
+
 export function useCreateHabit() {
     const queryClient = useQueryClient();
 
@@ -43,6 +84,7 @@ export function useCreateHabit() {
             });
             queryClient.invalidateQueries({ queryKey: habitKeys.all });
             queryClient.invalidateQueries({ queryKey: habitKeys.today });
+            queryClient.invalidateQueries({ queryKey: habitKeys.last30Days });
         },
         onError: (error) => {
             if (error instanceof ValidationError) {
@@ -63,17 +105,15 @@ export function useCreateHabitRecord() {
         mutationFn: (dto: CreateHabitRecordDto) => habitService.createRecord(dto),
 
         onSuccess: (_, dto) => {
-            // Mensaje según tipo de acción
             const isToggle = dto.isCompleted != null;
             notify.success({
                 title: isToggle
                     ? (dto.isCompleted ? "¡Bien hecho!" : "Marcado como pendiente")
                     : "¡Registro guardado!",
-                description: isToggle
-                    ? undefined
-                    : `Registrado correctamente.`,
+                description: isToggle ? undefined : "Registrado correctamente.",
             });
             queryClient.invalidateQueries({ queryKey: habitKeys.today });
+            queryClient.invalidateQueries({ queryKey: habitKeys.last30Days });
         },
 
         onError: (error) => {

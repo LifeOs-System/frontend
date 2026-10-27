@@ -29,6 +29,8 @@ const QUOTES = [
     { text: "El único límite para nuestro logro del mañana serán nuestras dudas de hoy.", author: "Franklin D. Roosevelt" },
     { text: "No te juzgues por tus logros, sino por el esfuerzo que hiciste.", author: "Anonimo" },
     { text: "Cada día es una nueva oportunidad para cambiar tu vida.", author: "Anonimo" },
+    { text: "Es vergonzoso que, en el transcurso de una vida en la que tu cuerpo no desfallece, " +
+            "en este desfallezca primeramente tu alma", author: "Marco Aurelio" },
 ];
 
 interface QuoteCardProps {

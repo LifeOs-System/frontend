@@ -116,7 +116,7 @@ export function TasksCard() {
                                 className="group flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.01] p-3 transition-all hover:bg-white/[0.03]"
                             >
                                 <div className="flex-1 min-w-0">
-                                    <p className="truncate text-sm font-medium text-white/90">
+                                    <p className="wrap-anywhere text-sm font-medium text-white/90 whitespace-pre-wrap">
                                         {task.name}
                                     </p>
                                     <p
